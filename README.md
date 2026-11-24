@@ -115,17 +115,3 @@ fun sortTasks() {
 
 Daftar tugas dapat diurutkan berdasarkan judul dari A sampai Z.
 
-## Teknologi
-
-- Kotlin
-- Android Studio
-- Kotlin Coroutines
-- ViewModel
-- StateFlow
-- Jetpack Compose
-
-## Kesimpulan
-
-Kotlin Coroutines memungkinkan proses asinkron berjalan secara bersamaan. Penggunaan  launch ,  async , dan  withContext  membantu mengatur pekerjaan sesuai kebutuhan.
-
-Pemilihan dispatcher yang tepat juga penting untuk mencegah Main Thread terblokir dan menjaga aplikasi tetap responsif.
