@@ -50,13 +50,13 @@ Ketika Load ditekan lalu segera diikuti Cancel, pesan yang dapat muncul:
 
 ## 4. Perbandingan Thread.sleep() dan withContext()
 
-**Skenario A: Menggunakan  Dispatchers.IO **
+**Skenario A: Menggunakan Dispatchers.IO**
 
  Thread.sleep(2000L)  dijalankan di dalam  withContext(Dispatchers.IO) .
 
 Hasil: UI tetap responsif karena hanya thread latar belakang yang terblokir.
 
-**Skenario B: Menghapus  withContext(Dispatchers.IO) **
+**Skenario B: Menghapus withContext(Dispatchers.IO)**
 
  Thread.sleep(2000L)  dijalankan pada Main Thread.
 
