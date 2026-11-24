@@ -1,15 +1,15 @@
 1. Tambah Permintaan getCourseCount()
-•
+
 Implementasi Kode:
-◦
+
  TaskRepository.kt: Menambahkan suspend fun getCourseCount(): Int dengan delay(1500L).
-◦
+
  TasksUiState.kt: Menambahkan field courseCount: Int = 0.
-◦
+
  TasksViewModel.kt: Memanggil async { repository.getCourseCount() } di dalam coroutineScope dan mengambil hasilnya dengan .await().
-◦
+
  TasksScreen.kt: Menampilkan informasi Course Count di layar jika nilainya > 0.
-•
+
 Jawaban Pertanyaan:
 Apakah total waktu pemuatan masih sekitar 2 detik? Jelaskan alasannya.
 Ya, total waktu pemuatan masih sekitar 2 detik.
