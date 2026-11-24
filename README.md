@@ -71,7 +71,8 @@ Operasi yang memblokir thread harus dijalankan pada dispatcher yang sesuai agar 
 A. Perbedaan  launch  dan  async 
 
 launch, Tidak menghasilkan nilai untuk diambil. Mengembalikan  Job. Tidak menggunakan  await().
-async, Menghasilkan nilai. Mengembalikan  Deferred. Menggunakan  await(). 
+
+async, Menghasilkan nilai. Mengembalikan  Deferred. Menggunakan  await().
 
 **B. Mengapa  GlobalScope  Dihindari?**
 
