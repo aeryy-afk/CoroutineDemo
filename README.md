@@ -4,7 +4,7 @@
 
 Implementasi Kotlin Coroutines pada aplikasi Android untuk mempelajari proses asinkron, penanganan error, cancellation, dan pengelolaan thread.
 
-## 1. Menambahkan `getCourseCount()`
+## 1. Menambahkan getCourseCount()
 
 **Implementasi:**
 - `TaskRepository.kt`: Menambahkan `getCourseCount()` dengan `delay(1500L)`.
