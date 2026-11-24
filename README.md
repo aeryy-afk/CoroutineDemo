@@ -2,23 +2,29 @@
 
 ## Deskripsi Project
 
-Project ini merupakan implementasi latihan Kotlin Coroutines pada aplikasi Android. Tujuannya adalah memahami konsep pemrograman asinkron, menjalankan beberapa proses secara bersamaan, menangani error dan pembatalan coroutine, serta mengelola proses komputasi agar tidak mengganggu responsivitas antarmuka pengguna (UI).
+Pada latihan ini, saya mempelajari penggunaan Kotlin Coroutines dalam pengembangan aplikasi Android. Latihan dilakukan dengan menambahkan beberapa fitur pada aplikasi Coroutine Demo, sekaligus mencoba bagaimana coroutine bekerja ketika menjalankan proses secara bersamaan, menangani error, dan melakukan pembatalan proses.
 
-## Fitur dan Implementasi
+Selain itu, saya juga mempelajari pengaruh penggunaan thread terhadap responsivitas aplikasi agar proses yang membutuhkan waktu lama tidak membuat tampilan menjadi macet.
+
+## Hasil Pengerjaan Latihan
 
 ### 1. Menambahkan Permintaan `getCourseCount()`
 
-Menambahkan proses pengambilan jumlah course menggunakan Kotlin Coroutines.
+Pada latihan pertama, saya menambahkan fungsi baru untuk mengambil jumlah course yang tersedia.
 
 **Implementasi:**
-- `TaskRepository.kt`: Menambahkan fungsi `suspend fun getCourseCount(): Int` dengan simulasi waktu proses menggunakan `delay(1500L)`.
-- `TasksUiState.kt`: Menambahkan properti `courseCount: Int = 0`.
-- `TasksViewModel.kt`: Menjalankan `getCourseCount()` menggunakan `async` dan mengambil hasilnya dengan `await()`.
-- `TasksScreen.kt`: Menampilkan informasi jumlah course jika nilainya lebih dari 0.
+- Pada `TaskRepository.kt`, saya menambahkan fungsi `suspend fun getCourseCount(): Int` dengan `delay(1500L)` sebagai simulasi proses pengambilan data.
+- Pada `TasksUiState.kt`, saya menambahkan properti `courseCount` dengan nilai awal 0.
+- Pada `TasksViewModel.kt`, saya menggunakan `async` untuk menjalankan fungsi `getCourseCount()` dan mengambil hasilnya menggunakan `await()`.
+- Pada `TasksScreen.kt`, saya menampilkan jumlah course jika nilainya lebih dari 0.
 
 **Hasil dan Analisis:**
 
-Total waktu pemuatan tetap sekitar 2 detik karena ketiga proses dijalankan secara bersamaan menggunakan `async` di dalam `coroutineScope`.
+Setelah fungsi tersebut ditambahkan, waktu pemuatan aplikasi masih sekitar 2 detik.
+
+Hal ini karena ketiga proses, yaitu `getTasks()`, `getAnnouncement()`, dan `getCourseCount()`, dijalankan secara bersamaan menggunakan `async` di dalam `coroutineScope`.
+
+Berikut perbandingan waktu masing-masing proses:
 
 | Proses | Waktu |
 |---|---:|
@@ -26,93 +32,101 @@ Total waktu pemuatan tetap sekitar 2 detik karena ketiga proses dijalankan secar
 | `getAnnouncement()` | 1000 ms |
 | `getCourseCount()` | 1500 ms |
 
-Total waktu ditentukan oleh proses yang paling lama, bukan penjumlahan seluruh durasi.
+Karena dijalankan secara bersamaan, waktu yang dibutuhkan mengikuti proses paling lama, yaitu `getTasks()` selama 2000 ms. Jadi, waktunya bukan hasil penjumlahan ketiga proses tersebut.
 
 ### 2. Menambahkan Tombol Retry
 
-Menambahkan tombol Retry untuk mengulangi proses pemuatan data ketika terjadi kesalahan.
+Pada latihan kedua, saya menambahkan tombol Retry agar pengguna bisa mencoba memuat data kembali ketika terjadi error.
 
 **Implementasi:**
-- Pesan error ditampilkan ketika `state.errorMessage` tidak bernilai `null`.
-- Pesan error dan tombol Retry ditempatkan dalam sebuah `Row`.
-- Tombol Retry memanggil `onLoad`, yang menjalankan kembali `viewModel.loadData()`.
+- Tombol Retry ditampilkan ketika `state.errorMessage` memiliki nilai.
+- Pesan error dan tombol Retry diletakkan berdampingan menggunakan `Row`.
+- Ketika tombol Retry ditekan, fungsi `onLoad` akan dipanggil untuk menjalankan kembali `viewModel.loadData()`.
 
 **Hasil:**
 
-Pengguna dapat mencoba memuat data kembali tanpa harus menjalankan ulang aplikasi.
+Ketika proses pemuatan data mengalami kegagalan, pesan error akan ditampilkan bersama tombol Retry. Dengan adanya tombol tersebut, pengguna bisa mencoba memuat data kembali tanpa perlu menutup dan membuka aplikasi.
 
 ### 3. Menangkap Terlalu Banyak Exception
 
-Menguji perubahan penanganan error dari `catch (e: IOException)` menjadi `catch (e: Exception)`.
+Pada latihan ketiga, saya mencoba mengubah penanganan error dari `catch (e: IOException)` menjadi `catch (e: Exception)`.
+
+Setelah itu, saya menjalankan aplikasi dengan menekan tombol Load dan langsung menekan Cancel.
 
 **Hasil Pengujian:**
 
-Ketika tombol Load ditekan lalu segera diikuti Cancel, pesan error dapat muncul seperti:
+Pesan yang dapat muncul adalah:
 
 `Failed to load: StandaloneCoroutine was cancelled`
 
 **Analisis:**
 
-Pembatalan coroutine pada Kotlin menggunakan `CancellationException`. Karena exception tersebut merupakan turunan dari `Exception`, penggunaan `catch (e: Exception)` dapat menangkap pembatalan coroutine.
+Hal ini terjadi karena pembatalan coroutine menggunakan `CancellationException`, yang merupakan turunan dari `Exception`.
 
-Akibatnya, pembatalan yang seharusnya berlangsung secara normal justru diperlakukan sebagai kesalahan biasa dan dapat menampilkan pesan error pada UI.
+Ketika menggunakan `catch (e: Exception)`, pembatalan coroutine ikut tertangkap oleh blok catch. Akibatnya, proses yang seharusnya berhenti secara normal justru dianggap sebagai error dan pesan kesalahan dapat muncul pada layar.
+
+Dari percobaan ini, saya memahami bahwa penggunaan blok catch harus diperhatikan agar proses pembatalan coroutine tidak dianggap sebagai kesalahan biasa.
 
 ### 4. Perbandingan `Thread.sleep()` dan `withContext()`
 
-Melakukan pengujian untuk memahami pengaruh pemilihan thread terhadap responsivitas aplikasi.
+Pada latihan keempat, saya mencoba mengganti `delay(2000L)` menjadi `Thread.sleep(2000L)` untuk melihat pengaruhnya terhadap aplikasi.
 
-**Skenario A: `Thread.sleep()` di dalam `Dispatchers.IO`**
+Pengujian dilakukan dengan dua skenario.
 
-`Thread.sleep(2000L)` dijalankan di dalam `withContext(Dispatchers.IO)`.
+**Skenario A: Menggunakan `Thread.sleep()` di dalam `withContext(Dispatchers.IO)`**
 
-Hasil: UI tetap responsif karena thread yang diblokir adalah thread latar belakang, bukan Main Thread.
+Pada skenario ini, saya mengganti `delay(2000L)` dengan `Thread.sleep(2000L)`, tetapi tetap mempertahankan `withContext(Dispatchers.IO)`.
 
-**Skenario B: `Thread.sleep()` tanpa `withContext(Dispatchers.IO)`**
+Hasilnya, aplikasi masih bisa merespons sentuhan dan interaksi pengguna.
 
-`withContext(Dispatchers.IO)` dihapus sehingga `Thread.sleep(2000L)` dijalankan pada Main Thread.
+Hal ini karena `Thread.sleep()` hanya memblokir thread yang sedang menjalankan proses tersebut, yaitu thread dari `Dispatchers.IO`. Sementara itu, Main Thread tetap bisa menjalankan tugas yang berhubungan dengan tampilan aplikasi.
 
-Hasil: UI mengalami freeze selama sekitar 2 detik karena Main Thread tidak dapat memproses interaksi pengguna maupun memperbarui tampilan.
+**Skenario B: Menghapus `withContext(Dispatchers.IO)`**
+
+Pada skenario kedua, saya menghapus `withContext(Dispatchers.IO)` sehingga `Thread.sleep(2000L)` dijalankan langsung di dalam fungsi `getTasks()`.
+
+Hasil yang diharapkan adalah aplikasi mengalami freeze selama sekitar 2 detik. Selama proses tersebut berlangsung, aplikasi menjadi tidak responsif karena Main Thread ikut terblokir.
+
+Hal ini terjadi karena `getTasks()` dipanggil dari `viewModelScope.launch` yang secara default berjalan pada Main Dispatcher. Akibatnya, `Thread.sleep()` menghentikan sementara pekerjaan Main Thread.
 
 **Kesimpulan:**
 
-Operasi yang berpotensi memblokir thread harus dijalankan pada dispatcher yang sesuai agar tidak mengganggu responsivitas aplikasi.
+Dari kedua percobaan tersebut, saya memahami bahwa penggunaan thread sangat berpengaruh terhadap responsivitas aplikasi. `Thread.sleep()` di dalam `Dispatchers.IO` tidak menghambat UI, sedangkan jika dijalankan pada Main Thread, aplikasi bisa mengalami freeze.
 
 ### 5. Pertanyaan Konsep Kotlin Coroutines
 
-#### A. Perbedaan `launch` dan `async`
+**A. Apa perbedaan `launch` dan `async`?**
 
-| `launch` | `async` |
-|---|---|
-| Menjalankan coroutine tanpa hasil return yang perlu diambil. | Menjalankan coroutine yang menghasilkan nilai. |
-| Mengembalikan `Job`. | Mengembalikan `Deferred`. |
-| Tidak menggunakan `await()`. | Menggunakan `await()` untuk mengambil hasil. |
+`launch` digunakan ketika kita ingin menjalankan coroutine tanpa perlu mengambil nilai hasil dari proses tersebut. Fungsi ini mengembalikan objek `Job`.
 
-#### B. Mengapa `GlobalScope` Sebaiknya Dihindari?
+Sementara itu, `async` digunakan ketika proses coroutine menghasilkan suatu nilai yang nantinya ingin digunakan. Hasilnya dapat diambil menggunakan `await()` melalui objek `Deferred`.
 
-`GlobalScope` tidak terikat pada lifecycle Activity atau ViewModel. Coroutine yang dijalankan dapat terus berlangsung meskipun layar sudah ditutup.
+**B. Mengapa `GlobalScope` sebaiknya dihindari?**
 
-Hal tersebut dapat menyebabkan pemborosan sumber daya dan pekerjaan latar belakang yang tidak diperlukan.
+Menurut saya, alasan utama `GlobalScope` sebaiknya dihindari adalah karena coroutine yang dijalankan tidak terikat pada lifecycle Activity atau ViewModel.
 
-Karena itu, lebih disarankan menggunakan scope yang terikat pada lifecycle, seperti `viewModelScope`.
+Artinya, ketika pengguna menutup halaman aplikasi, coroutine tersebut masih bisa terus berjalan. Hal ini dapat menyebabkan pekerjaan yang tidak diperlukan tetap berlangsung dan menghabiskan sumber daya perangkat.
 
-#### C. Apa yang Terjadi Jika `getTasks()` Gagal?
+Sebagai gantinya, kita bisa menggunakan `viewModelScope` agar coroutine mengikuti lifecycle ViewModel.
 
-Berdasarkan prinsip Structured Concurrency, ketika salah satu child coroutine mengalami exception, coroutine lain yang berada dalam scope yang sama dapat ikut dibatalkan.
+**C. Apa yang terjadi pada `getAnnouncement()` jika `getTasks()` gagal?**
 
-Dengan demikian, jika `getTasks()` gagal, proses `getAnnouncement()` juga dapat dibatalkan dan exception diteruskan ke parent `coroutineScope`.
+Jika `getTasks()` mengalami kegagalan, maka coroutine lain yang berada dalam `coroutineScope` yang sama, termasuk `getAnnouncement()`, juga dapat dibatalkan.
+
+Hal ini merupakan bagian dari konsep Structured Concurrency, yaitu setiap coroutine memiliki hubungan dengan parent dan sibling-nya. Ketika salah satu child mengalami kegagalan, parent dan coroutine lain dalam scope tersebut dapat ikut dibatalkan.
 
 ### 6. Tantangan: Menambahkan Tombol Sort
 
-Menambahkan fitur untuk mengurutkan daftar tugas berdasarkan judul (*title*) secara alfabetis.
+Pada tantangan terakhir, saya menambahkan tombol Sort untuk mengurutkan daftar tugas berdasarkan judul secara alfabetis.
 
 **Implementasi:**
-- `TasksViewModel.kt`: Menambahkan fungsi `sortTasks()`.
-- Menggunakan `withContext(Dispatchers.Default)` untuk menjalankan proses pengurutan.
-- Menggunakan `sortedBy { it.title }` untuk mengurutkan daftar tugas.
-- Memperbarui UI State menggunakan `_uiState.update`.
-- `TasksScreen.kt`: Menambahkan tombol Sort yang aktif ketika daftar tugas sudah dimuat.
+- Pada `TasksViewModel.kt`, saya menambahkan fungsi `sortTasks()`.
+- Saya menggunakan `sortedBy { it.title }` untuk mengurutkan daftar tugas berdasarkan judul.
+- Proses pengurutan dijalankan menggunakan `withContext(Dispatchers.Default)` agar tidak membebani Main Thread.
+- Setelah proses pengurutan selesai, hasilnya digunakan untuk memperbarui UI State melalui `_uiState.update`.
+- Pada `TasksScreen.kt`, saya menambahkan tombol Sort yang dapat digunakan ketika daftar tugas sudah dimuat.
 
-**Contoh Implementasi:**
+**Contoh Kode:**
 
 ```kotlin
 fun sortTasks() {
@@ -134,19 +148,23 @@ fun sortTasks() {
 
 **Hasil:**
 
-Ketika tombol Sort ditekan, daftar tugas akan diurutkan berdasarkan judul secara alfabetis tanpa membebani Main Thread.
+Ketika tombol Sort ditekan, daftar tugas akan diurutkan berdasarkan judul dari A sampai Z. Proses pengurutan dilakukan pada `Dispatchers.Default`, sehingga pekerjaan komputasi tidak perlu dijalankan pada Main Thread.
 
 ## Teknologi yang Digunakan
 
-- **Kotlin** – Bahasa pemrograman utama.
-- **Android Studio** – IDE pengembangan aplikasi Android.
-- **Kotlin Coroutines** – Menangani proses asinkron.
-- **ViewModel** – Mengelola data dan state UI.
-- **StateFlow** – Mengelola serta mengamati perubahan UI State.
-- **Jetpack Compose** – Membangun antarmuka pengguna.
+Beberapa teknologi dan komponen yang digunakan dalam latihan ini antara lain:
+
+- **Kotlin:** Bahasa pemrograman untuk mengembangkan aplikasi Android.
+- **Android Studio:** IDE yang digunakan untuk membuat dan menjalankan aplikasi.
+- **Kotlin Coroutines:** Digunakan untuk menjalankan proses secara asinkron.
+- **ViewModel:** Mengelola data dan proses yang berhubungan dengan UI.
+- **StateFlow:** Mengelola perubahan state agar tampilan dapat diperbarui ketika data berubah.
+- **Jetpack Compose:** Digunakan untuk membangun tampilan aplikasi Android.
 
 ## Kesimpulan
 
-Melalui latihan ini, konsep Kotlin Coroutines diterapkan untuk menjalankan proses asinkron secara efisien, menangani exception dan cancellation, serta menjaga responsivitas aplikasi Android.
+Setelah menyelesaikan latihan ini, saya menjadi lebih memahami bagaimana Kotlin Coroutines digunakan dalam aplikasi Android. Saya belajar bahwa beberapa proses dapat dijalankan secara bersamaan menggunakan `async`, sedangkan `launch` dapat digunakan untuk menjalankan coroutine yang tidak memerlukan nilai hasil.
 
-Penggunaan `async`, `launch`, `withContext`, dan `viewModelScope` membantu mengelola pekerjaan berdasarkan kebutuhan dan lifecycle aplikasi. Selain itu, penggunaan dispatcher yang tepat dapat mencegah proses berat menghambat Main Thread.
+Saya juga memahami pentingnya penanganan error dan pembatalan coroutine, serta bagaimana penggunaan `Dispatchers.IO` dan `Dispatchers.Default` dapat membantu menjalankan pekerjaan di luar Main Thread.
+
+Melalui percobaan `Thread.sleep()`, saya bisa melihat secara langsung bahwa pemilihan thread yang tidak tepat dapat menyebabkan aplikasi menjadi tidak responsif. Oleh karena itu, penggunaan coroutine dan dispatcher yang sesuai sangat penting agar aplikasi tetap berjalan dengan baik.
