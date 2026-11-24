@@ -9,7 +9,7 @@ class TaskRepository {
 
     suspend fun getTasks(shouldFail: Boolean = false): List<Task> =
         withContext(Dispatchers.IO) {
-            delay(2000L)
+            Thread.sleep(2000L)
             if (shouldFail) {
                 throw IOException("Server is not reachable")
             }
@@ -24,5 +24,11 @@ class TaskRepository {
         withContext(Dispatchers.IO) {
             delay(1000L)
             "Quiz 2 is next Monday"
+        }
+
+    suspend fun getCourseCount(): Int =
+        withContext(Dispatchers.IO) {
+            delay(1500L)
+            3
         }
 }

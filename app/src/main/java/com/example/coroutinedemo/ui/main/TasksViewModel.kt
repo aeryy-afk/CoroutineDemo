@@ -3,6 +3,7 @@ package com.example.coroutinedemo.ui.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coroutinedemo.data.TaskRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 
 class TasksViewModel(
@@ -30,13 +32,16 @@ class TasksViewModel(
                 coroutineScope {
                     val tasks = async { repository.getTasks(shouldFail) }
                     val announcement = async { repository.getAnnouncement() }
+                    val courseCount = async { repository.getCourseCount() }
                     val loadedTasks = tasks.await()
                     val loadedAnnouncement = announcement.await()
+                    val loadedCourseCount = courseCount.await()
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             tasks = loadedTasks,
-                            announcement = loadedAnnouncement
+                            announcement = loadedAnnouncement,
+                            courseCount = loadedCourseCount
                         )
                     }
                 }
@@ -64,5 +69,17 @@ class TasksViewModel(
 
     fun blockMainThread() {
         Thread.sleep(3000L)
+    }
+
+    fun sortTasks() {
+        viewModelScope.launch {
+            val currentTasks = _uiState.value.tasks
+            if (currentTasks.isNotEmpty()) {
+                val sorted = withContext(Dispatchers.Default) {
+                    currentTasks.sortedBy { it.title }
+                }
+                _uiState.update { it.copy(tasks = sorted) }
+            }
+        }
     }
 }

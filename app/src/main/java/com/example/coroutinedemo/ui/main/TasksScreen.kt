@@ -16,6 +16,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +36,7 @@ fun TasksScreen(
         onCancel = viewModel::cancelLoading,
         onTap = viewModel::onTap,
         onBlock = viewModel::blockMainThread,
+        onSort = viewModel::sortTasks,
         modifier = modifier
     )
 }
@@ -47,6 +49,7 @@ fun TasksContent(
     onCancel: () -> Unit,
     onTap: () -> Unit,
     onBlock: () -> Unit,
+    onSort: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -79,6 +82,12 @@ fun TasksContent(
             OutlinedButton(onClick = onBlock) {
                 Text("Block UI")
             }
+            OutlinedButton(
+                onClick = onSort,
+                enabled = state.tasks.isNotEmpty() && !state.isLoading
+            ) {
+                Text("Sort")
+            }
         }
 
         if (state.isLoading) {
@@ -86,11 +95,27 @@ fun TasksContent(
         }
 
         state.errorMessage?.let { message ->
-            Text(message, color = MaterialTheme.colorScheme.error)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.weight(1f)
+                )
+                Button(onClick = onLoad) {
+                    Text("Retry")
+                }
+            }
         }
 
         if (state.announcement.isNotEmpty()) {
             Text("Announcement: ${state.announcement}")
+        }
+
+        if (state.courseCount > 0) {
+            Text("Course Count: ${state.courseCount}")
         }
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
